@@ -1,0 +1,10 @@
+*.pdf
+*.zip
+*.png
+*.jpg
+*.jpeg
+*.DS_Store
+
+exe/
+exe*
+.vscode/

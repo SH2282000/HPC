@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Sheet 3</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="sheet-3">Sheet 3</h1>
+<h2 id="peterson-lock">Peterson Lock</h2>
+<blockquote>
+<p>What happens if we implement the lock more selshly with <code>turn = self</code>; instead?</p>
+</blockquote>
+<p>Both threads will try to access the critical section at the same time and not let each other get this access. This will result in a race condition and/or the starvation of one thread.
+Thus, the mutual exclusion and fairness are compromised.</p>
+<blockquote>
+<p>Does this algorithm still guarantee mututal exclusion? Is the lock still starvation-free?</p>
+</blockquote>
+<p>Yes, the mutual exclusion and fairness is guaranteed for 2 threads. Thus, it is starvation free. However this behavior cannot be guaranteed for more than 2 threads.</p>
+<blockquote>
+<p>Implement the lock using C++ atomics</p>
+</blockquote>
+<p>Here's how we can implement the perterson algorithm with atomics:</p>
+<pre><code class="language-cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Peterson</span> {
+    <span class="hljs-keyword">private</span>:
+        atomic&lt;<span class="hljs-type">bool</span>&gt; interested[<span class="hljs-number">2</span>];
+        atomic&lt;<span class="hljs-type">int</span>&gt; turn;
+
+    <span class="hljs-keyword">public</span>:
+        <span class="hljs-built_in">Peterson</span>() {
+            interested[<span class="hljs-number">0</span>].<span class="hljs-built_in">store</span>(<span class="hljs-number">0</span>)
+            interested[<span class="hljs-number">1</span>].<span class="hljs-built_in">store</span>(<span class="hljs-number">0</span>)
+            turn.<span class="hljs-built_in">store</span>(<span class="hljs-number">0</span>)
+        }
+
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">acquire</span><span class="hljs-params">(<span class="hljs-type">int</span> id)</span> </span>{
+        <span class="hljs-type">int</span> other = <span class="hljs-number">1</span> - id
+        interested[id].<span class="hljs-built_in">store</span>(<span class="hljs-literal">true</span>, memory_order_relaxed)
+        turn.<span class="hljs-built_in">store</span>(other, memory_order_relaxed)
+        <span class="hljs-built_in">atomic_thread_fence</span>(memory_order_seq_cst)
+
+        <span class="hljs-keyword">while</span>(interested[other].<span class="hljs-built_in">load</span>(memory_order_relaxed) &amp;&amp; turn.<span class="hljs-built_in">load</span>(memory_order_relaxed) == other) { <span class="hljs-comment">/* spin */</span> }
+    }
+    <span class="hljs-type">void</span> <span class="hljs-built_in">release</span>(<span class="hljs-type">int</span> id) {
+        interested[id].<span class="hljs-built_in">store</span>(<span class="hljs-literal">false</span>, memory_order_relaxed)
+    }
+}
+</code></pre>
+<h2 id="mcs-lock">MCS Lock</h2>
+<blockquote>
+<p>Implement the lock using C++ atomics.</p>
+</blockquote>
+<pre><code class="language-cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MCSLock</span>
+{
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-built_in">MCSLock</span>() : <span class="hljs-built_in">tail</span>(<span class="hljs-literal">nullptr</span>) {}
+
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">acquire</span><span class="hljs-params">(QNode *p)</span>
+    </span>{
+        p-&gt;next.<span class="hljs-built_in">store</span>(<span class="hljs-literal">nullptr</span>, memory_order_relaxed);
+        p-&gt;wait.<span class="hljs-built_in">store</span>(<span class="hljs-literal">true</span>, memory_order_relaxed);
+        QNode *prev = tail.<span class="hljs-built_in">exchange</span>(p, memory_order_acq_rel);
+        <span class="hljs-keyword">if</span> (prev != <span class="hljs-literal">nullptr</span>)
+        {
+            prev-&gt;next.<span class="hljs-built_in">store</span>(p, memory_order_release);
+            <span class="hljs-keyword">while</span> (p-&gt;wait.<span class="hljs-built_in">load</span>(memory_order_acquire)) { <span class="hljs-comment">/* spin */</span>}
+        }
+    }
+
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">release</span><span class="hljs-params">(QNode *p)</span>
+    </span>{
+        QNode *succ = p-&gt;next.<span class="hljs-built_in">load</span>(memory_order_acquire);
+        <span class="hljs-keyword">if</span> (succ == <span class="hljs-literal">nullptr</span>)
+        {
+            QNode *expected = p;
+            <span class="hljs-keyword">if</span> (tail.<span class="hljs-built_in">compare_exchange_strong</span>(expected, <span class="hljs-literal">nullptr</span>, memory_order_acq_rel))
+            {
+                <span class="hljs-keyword">return</span>;
+            }
+            <span class="hljs-comment">// Wait until the successor is set</span>
+            <span class="hljs-keyword">while</span> ((succ = p-&gt;next.<span class="hljs-built_in">load</span>(memory_order_acquire)) == <span class="hljs-literal">nullptr</span>){<span class="hljs-comment">/*spin*/</span>}
+        }
+        succ-&gt;wait.<span class="hljs-built_in">store</span>(<span class="hljs-literal">false</span>, memory_order_release);
+    }
+
+<span class="hljs-keyword">private</span>:
+    atomic&lt;QNode *&gt; tail;
+};
+</code></pre>
+<blockquote>
+<p>Devise a method for testing your implementation and thoroughly test your lock implementation in various scenarios</p>
+</blockquote>
+<p>I implemented 3 types of tests:</p>
+<ul>
+<li>Basic test (just proceed to the acquisition by index order)</li>
+<li>Contention test</li>
+<li>Fairness test</li>
+</ul>
+<pre><code class="language-cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">fairness_test</span><span class="hljs-params">(<span class="hljs-type">int</span> id)</span>
+</span>{
+    QNode node;
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; ++i)
+    {
+        lock.<span class="hljs-built_in">acquire</span>(&amp;node);
+        order_of_acquisition.<span class="hljs-built_in">push_back</span>(order_counter++);
+        lock.<span class="hljs-built_in">release</span>(&amp;node);
+    }
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">run_tests</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-type">const</span> <span class="hljs-type">int</span> num_threads = <span class="hljs-number">10</span>;
+    <span class="hljs-type">const</span> <span class="hljs-type">int</span> increments = <span class="hljs-number">1000</span>;
+
+    shared_counter = <span class="hljs-number">0</span>;
+    order_counter.<span class="hljs-built_in">store</span>(<span class="hljs-number">0</span>);
+    order_of_acquisition.<span class="hljs-built_in">clear</span>();
+
+    <span class="hljs-comment">// Basic test</span>
+    {
+        vector&lt;thread&gt; threads;
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; num_threads; ++i)
+        {
+            threads.<span class="hljs-built_in">emplace_back</span>(increment_counter, i, increments);
+        }
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> &amp;t : threads)
+        {
+            t.<span class="hljs-built_in">join</span>();
+        }
+        <span class="hljs-built_in">assert</span>(shared_counter == num_threads * increments);
+        cout &lt;&lt; <span class="hljs-string">&quot;Basic test passed. Shared counter: &quot;</span> &lt;&lt; shared_counter &lt;&lt; endl;
+    }
+
+    <span class="hljs-comment">// Contention test</span>
+    {
+        vector&lt;thread&gt; threads;
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; num_threads; ++i)
+        {
+            threads.<span class="hljs-built_in">emplace_back</span>(contention_test, i, increments);
+        }
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> &amp;t : threads)
+        {
+            t.<span class="hljs-built_in">join</span>();
+        }
+        cout &lt;&lt; <span class="hljs-string">&quot;Contention test completed.&quot;</span> &lt;&lt; endl;
+    }
+
+    <span class="hljs-comment">// Fairness test</span>
+    {
+        vector&lt;thread&gt; threads;
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; num_threads; ++i)
+        {
+            threads.<span class="hljs-built_in">emplace_back</span>(fairness_test, i);
+        }
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> &amp;t : threads)
+        {
+            t.<span class="hljs-built_in">join</span>();
+        }
+        <span class="hljs-type">bool</span> ordered = <span class="hljs-literal">true</span>;
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">1</span>; i &lt; order_of_acquisition.<span class="hljs-built_in">size</span>(); ++i)
+        {
+            <span class="hljs-keyword">if</span> (order_of_acquisition[i - <span class="hljs-number">1</span>] &gt; order_of_acquisition[i])
+            {
+                ordered = <span class="hljs-literal">false</span>;
+                <span class="hljs-keyword">break</span>;
+            }
+        }
+        <span class="hljs-built_in">assert</span>(ordered);
+        cout &lt;&lt; <span class="hljs-string">&quot;Fairness test passed. Order of acquisition is correct.&quot;</span> &lt;&lt; endl;
+    }
+}
+</code></pre>
+
+            
+            
+        </body>
+        </html>
